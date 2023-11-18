@@ -12,7 +12,22 @@ option = st.selectbox('Select data to view',
 
 st.subheader(f'{option} for the next {days} days in {place}')
 
-date,temp = get_data(place,days,option)
+if place:
+    filtered_data,status = get_data(place,days)
+    if status == "200":
+        if option == "Temperature":
+            temp_list = [data['main']['temp']-273.15 for data in filtered_data]
+            dates = [data['dt_txt'] for data in filtered_data]
+            figure = px.line(x=dates, y=temp_list,
+                             labels={'x': 'Dates', 'y': 'temp'})
+            st.plotly_chart(figure)
 
-figure = px.line(x=date,y=temp, labels={'x': 'Dates', 'y': 'temp'})
-st.plotly_chart(figure)
+        elif option == "Sky":
+            sky_list = [data['weather'][0]['main'] for data in filtered_data]
+
+            filepaths = [f'images/{sky.lower()}.png' for sky in sky_list]
+            st.image(filepaths,width=115)
+
+
+    else:
+        st.info(filtered_data)
